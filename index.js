@@ -41,6 +41,10 @@ const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
+    console.log("Starting backend service...");
+    console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+    console.log(`Port: ${PORT}`);
+
     await connectDB();
     await seedAdmin();
     app.listen(PORT, () => {
@@ -48,6 +52,9 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error("Server startup failed:", error.message);
+    if (error.stack) {
+      console.error(error.stack);
+    }
     process.exit(1);
   }
 };
