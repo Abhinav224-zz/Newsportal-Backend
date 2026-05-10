@@ -39,24 +39,27 @@ const seedAdmin = async () => {
 
 const PORT = process.env.PORT || 5000;
 
-const startServer = async () => {
+const connectWithRetry = async (attempt = 1) => {
   try {
-    console.log("Starting backend service...");
-    console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-    console.log(`Port: ${PORT}`);
-
     await connectDB();
     await seedAdmin();
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+    console.log("Database initialization complete");
   } catch (error) {
-    console.error("Server startup failed:", error.message);
-    if (error.stack) {
-      console.error(error.stack);
-    }
-    process.exit(1);
+    console.error(`Database init failed (attempt ${attempt}):`, error.message);
+    const nextAttempt = attempt + 1;
+    setTimeout(() => connectWithRetry(nextAttempt), 10000);
   }
+};
+
+const startServer = () => {
+  console.log("Starting backend service...");
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`Port: ${PORT}`);
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    connectWithRetry();
+  });
 };
 
 startServer();
